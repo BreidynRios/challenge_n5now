@@ -1,4 +1,6 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Application.Commons.Behaviors;
+using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using System.Reflection;
 
 namespace Application.Extensions
@@ -9,6 +11,7 @@ namespace Application.Extensions
         {
             services.AddAutoMapper();
             services.AddMediator();
+            services.AddScoped(typeof(IPipelineBehavior<,>), typeof(RequestLoggingPipelineBehavior<,>));
         }
 
         private static void AddAutoMapper(this IServiceCollection services)

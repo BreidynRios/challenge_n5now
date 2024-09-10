@@ -26,16 +26,26 @@ namespace Infrastructure.ServicesClients
 
         public async Task ProduceAsync<T>(PermissionTopicParameter<T> message, CancellationToken cancellationToken)
         {
-            var topicMessage = new Message<string, string> 
-            { 
-                Value = JsonSerializer.Serialize(message) 
+            var topicMessage = new Message<string, string>
+            {
+                Value = JsonSerializer.Serialize(message)
             };
-            var result = await _producer.ProduceAsync(_kafkaProducer.Topic, topicMessage, cancellationToken);
 
-            if (result.Status is PersistenceStatus.Persisted)
-                _logger.LogInformation($"Kafka: Message persisted. Message: {topicMessage.Value}");
-            else
-                _logger.LogError($"Kafka: Message not persisted. Message: {topicMessage.Value}");
+            try
+            {
+                var result = await _producer.ProduceAsync(_kafkaProducer.Topic, topicMessage, cancellationToken);
+
+                if (result.Status is PersistenceStatus.Persisted)
+                    _logger.LogInformation("{Message}", $"Kafka: Message persisted. Message: {topicMessage.Value}");
+                else
+                    _logger.LogError("{Message}", $"Kafka: Message not persisted. Message: {topicMessage.Value}");
+            }
+            catch (Exception ex)
+            {
+                var errorMessage = "Kafka Exception: Message not persisted. " +
+                       $"Message: {topicMessage.Value}.";
+                _logger.LogError(ex, "{MESSAGE}", errorMessage);
+            }
         }
     }
 }
